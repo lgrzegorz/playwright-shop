@@ -83,3 +83,13 @@ def checkout_page(page: Page, base_url: str, credentials: dict) -> CheckoutPage:
     cart = CartPage(page)
     cart.proceed_to_checkout()
     return CheckoutPage(page)
+
+
+@pytest.fixture
+def fresh_inventory_page(page: Page, base_url: str, credentials: dict) -> InventoryPage:
+    """Fresh login every time — used for sorting tests to avoid stale state."""
+    page.goto(base_url)
+    login = LoginPage(page)
+    login.login(credentials["standard"]["username"], credentials["standard"]["password"])
+    page.wait_for_url("**/inventory.html")
+    return InventoryPage(page)
