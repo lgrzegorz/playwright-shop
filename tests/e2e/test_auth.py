@@ -35,7 +35,8 @@ class TestLogin:
         assert login_page.is_error_visible()
         assert "inventory" not in login_page.get_url()
 
-    def test_logout(self, inventory_page: InventoryPage, login_page: LoginPage):
+    def test_logout(self, inventory_page: InventoryPage):
         """Logged-in user can log out and is redirected to login."""
         inventory_page.logout()
-        assert "inventory" not in login_page.get_url()
+        assert "inventory" not in inventory_page.page.url
+
