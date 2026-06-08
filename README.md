@@ -1,6 +1,11 @@
 # 🛒 Playwright E2E Test Suite — SauceDemo
 
-Portfolio project demonstrating **Python + Playwright** test automation with Page Object Model, pytest fixtures, HTML reports, and GitHub Actions CI/CD.
+![Tests](https://github.com/lgrzegorz/playwright-shop/actions/workflows/playwright.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![Playwright](https://img.shields.io/badge/playwright-1.44+-green)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
+
+Portfolio project demonstrating **Python + Playwright** test automation with Page Object Model, pytest fixtures, automatic screenshots on failure, and GitHub Actions CI/CD running on Chromium and Firefox.
 
 **Tested site:** [saucedemo.com](https://www.saucedemo.com) — a purpose-built e-commerce demo for QA practice.
 
@@ -18,17 +23,17 @@ playwright-shop/
 │   └── checkout_page.py
 ├── tests/
 │   └── e2e/
-│       ├── test_auth.py        # Login / logout
-│       ├── test_inventory.py   # Product listing & sorting
-│       ├── test_cart.py        # Cart management
-│       └── test_checkout.py    # Checkout flow & validation
+│       ├── test_auth.py        # Login / logout (5 tests)
+│       ├── test_inventory.py   # Product listing & sorting (9 tests)
+│       ├── test_cart.py        # Cart management (3 tests)
+│       └── test_checkout.py    # Checkout flow & validation (5 tests)
 ├── utils/
 │   └── helpers.py          # Faker data generators, price parser
 ├── .github/
 │   └── workflows/
-│       └── playwright.yml  # GitHub Actions pipeline
-├── conftest.py             # Shared fixtures
-├── pytest.ini              # pytest config & markers
+│       └── playwright.yml  # GitHub Actions CI/CD pipeline
+├── conftest.py             # Shared fixtures + screenshot on failure
+├── pytest.ini              # pytest config, markers, auto-reruns
 ├── requirements.txt
 └── .env.example
 ```
@@ -40,20 +45,20 @@ playwright-shop/
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/<your-username>/playwright-shop.git
+git clone https://github.com/lgrzegorz/playwright-shop.git
 cd playwright-shop
 ```
 
 ### 2. Create a virtual environment
 
 ```bash
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
+python -m venv .venv
 
 # macOS / Linux
-source venv/bin/activate
+source .venv/bin/activate
+
+# Windows
+.venv\Scripts\activate
 ```
 
 ### 3. Install dependencies
@@ -65,97 +70,75 @@ pip install -r requirements.txt
 ### 4. Install Playwright browsers
 
 ```bash
-playwright install --with-deps chromium firefox
+playwright install chromium firefox
 ```
 
 ### 5. Configure environment
 
 ```bash
 cp .env.example .env
-# .env already contains the right values for saucedemo.com
-# Edit if you're pointing at a different environment
+# .env already contains correct values for saucedemo.com
 ```
 
 ---
 
 ## ▶️ Running Tests
 
-### Run the full suite (Chromium)
-
 ```bash
+# Full suite
 pytest
-```
 
-### Run only smoke tests
-
-```bash
+# Only smoke tests
 pytest -m smoke
-```
 
-### Run a specific test file
-
-```bash
+# Specific file
 pytest tests/e2e/test_checkout.py
-```
 
-### Run on Firefox
-
-```bash
+# Firefox
 pytest --browser firefox
-```
 
-### Run in headed mode (see the browser)
-
-```bash
+# Headed mode (see the browser)
 pytest --headed
-```
 
-### Run tests in parallel (4 workers)
-
-```bash
+# Parallel — 4 workers
 pytest -n 4
-```
-
-### Run with slow motion (useful for demos)
-
-```bash
-pytest --headed --slowmo 500
 ```
 
 ---
 
 ## 📊 Test Report
 
-After each run an HTML report is generated at:
-
-```
-reports/report.html
-```
-
-Open it in any browser:
+After each run an HTML report is generated at `reports/report.html`.
 
 ```bash
-# macOS
-open reports/report.html
-
-# Linux
-xdg-open reports/report.html
-
-# Windows
-start reports/report.html
+open reports/report.html        # macOS
+xdg-open reports/report.html    # Linux
+start reports/report.html       # Windows
 ```
+
+---
+
+## 📸 Screenshots on Failure
+
+When a test fails, a full-page screenshot is saved automatically to:
+
+```
+test-results/screenshots/<test_name>.png
+```
+
+In CI, screenshots are uploaded as a GitHub Actions artifact and available for download from the Actions run summary.
 
 ---
 
 ## 🏷️ Markers
 
-| Marker       | Description                        |
-|--------------|------------------------------------|
+| Marker       | Description                           |
+|--------------|---------------------------------------|
 | `smoke`      | Critical happy-path checks (~8 tests) |
-| `regression` | Full suite including edge cases    |
-| `auth`       | Login / logout tests               |
-| `cart`       | Shopping cart tests                |
-| `checkout`   | Checkout flow tests                |
+| `regression` | Full suite including edge cases       |
+| `auth`       | Login / logout tests                  |
+| `cart`       | Shopping cart tests                   |
+| `checkout`   | Checkout flow tests                   |
 
 ---
 
@@ -165,23 +148,16 @@ The pipeline runs automatically on:
 
 - Every push to `main` or `develop`
 - Every pull request targeting `main`
-- Nightly at 02:00 UTC (scheduled)
+- Nightly at 02:00 UTC
 - Manual trigger with optional marker filter
 
-### Setup steps
+### Artifacts available after each run
 
-1. Push this repo to GitHub.
-2. Go to **Settings → Secrets and variables → Actions**.
-3. Add these secrets (or leave them out — the workflow falls back to the public demo values):
-
-   | Secret          | Value                        |
-   |-----------------|------------------------------|
-   | `BASE_URL`      | `https://www.saucedemo.com`  |
-   | `STANDARD_USER` | `standard_user`              |
-   | `PASSWORD`      | `secret_sauce`               |
-
-4. Push a commit — the **Playwright Tests** workflow will start automatically.
-5. Download the `report-chromium.html` artifact from the Actions run summary.
+| Artifact | Contents |
+|---|---|
+| `report-chromium` | Full HTML test report |
+| `report-firefox` | Full HTML test report |
+| `screenshots-chromium` | Screenshots of failed tests (only on failure) |
 
 ### Manual run with marker filter
 
@@ -196,7 +172,8 @@ In GitHub → Actions → **Playwright Tests** → **Run workflow**, enter a mar
 | **Page Object Model** | Separates selectors from test logic; one fix when UI changes |
 | **Fixtures in conftest.py** | Reusable setup/teardown; keeps tests DRY |
 | **Faker for test data** | Avoids hardcoded names; prevents data pollution |
-| **pytest markers** | Enables targeted runs (smoke in CI, regression nightly) |
+| **Screenshot on failure** | Instant visual diagnosis without re-running |
+| **Auto-reruns (x2)** | Handles transient network flakiness automatically |
 | **Matrix strategy in CI** | Catches browser-specific bugs automatically |
 
 ---

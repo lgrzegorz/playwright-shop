@@ -41,6 +41,7 @@ def browser_context_args(browser_context_args):
         "record_video_dir": None,
     }
 
+
 @pytest.fixture(scope="session")
 def browser_type_launch_args(browser_type_launch_args):
     return {
@@ -48,6 +49,25 @@ def browser_type_launch_args(browser_type_launch_args):
         "headless": True,
     }
 
+
+# ── Screenshot on failure ─────────────────────────────────────────────────────
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call" and report.failed:
+        page: Page = item.funcargs.get("page")
+        if page:
+            screenshots_dir = "test-results/screenshots"
+            os.makedirs(screenshots_dir, exist_ok=True)
+            safe_name = report.nodeid.replace("/", "_").replace("::", "_").replace(" ", "_")
+            path = f"{screenshots_dir}/{safe_name}.png"
+            try:
+                page.screenshot(path=path, full_page=True)
+            except Exception:
+                pass
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
