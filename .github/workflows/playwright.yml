@@ -52,9 +52,9 @@ jobs:
         run: |
           MARKERS="${{ github.event.inputs.markers }}"
           if [ -n "$MARKERS" ]; then
-            pytest -m "$MARKERS" --browser ${{ matrix.browser }}
+            xvfb-run pytest -m "$MARKERS" --browser ${{ matrix.browser }}
           else
-            pytest --browser ${{ matrix.browser }}
+            xvfb-run pytest --browser ${{ matrix.browser }}
           fi
 
       - name: Upload HTML report
