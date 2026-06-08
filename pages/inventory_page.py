@@ -13,8 +13,7 @@ class InventoryPage(BasePage):
         self.inventory_items  = page.locator(".inventory_item")
         self.cart_badge       = page.locator(".shopping_cart_badge")
         self.cart_link        = page.locator(".shopping_cart_link")
-        self.sort_dropdown    = page.locator("[data-test='product_sort_container']")
-        self.burger_menu      = page.get_by_role("button", name="Open Menu")
+        self.burger_menu      = page.locator("#react-burger-menu-btn")
         self.logout_link      = page.locator("#logout_sidebar_link")
 
     # ── Navigation ────────────────────────────────────────────────────────────
@@ -56,4 +55,5 @@ class InventoryPage(BasePage):
 
     def sort_by(self, option: str) -> None:
         """Options: 'az', 'za', 'lohi', 'hilo'"""
-        self.sort_dropdown.select_option(option)
+        self.page.wait_for_selector("[data-test='product_sort_container']")
+        self.page.locator("[data-test='product_sort_container']").select_option(option)
