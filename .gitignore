@@ -9,3 +9,5 @@ venv/
 *.pyc
 *.pyo
 node_modules/
+.idea/
+.DS_Store
