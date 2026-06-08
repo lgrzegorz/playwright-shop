@@ -9,12 +9,12 @@ class InventoryPage(BasePage):
 
     def __init__(self, page: Page) -> None:
         super().__init__(page)
-        self.page_title       = page.locator(".title")
-        self.inventory_items  = page.locator(".inventory_item")
-        self.cart_badge       = page.locator(".shopping_cart_badge")
-        self.cart_link        = page.locator(".shopping_cart_link")
-        self.burger_menu      = page.locator("#react-burger-menu-btn")
-        self.logout_link      = page.locator("#logout_sidebar_link")
+        self.page_title      = page.locator(".title")
+        self.inventory_items = page.locator(".inventory_item")
+        self.cart_badge      = page.locator(".shopping_cart_badge")
+        self.cart_link       = page.locator(".shopping_cart_link")
+        self.burger_menu     = page.locator("#react-burger-menu-btn")
+        self.logout_link     = page.locator("#logout_sidebar_link")
 
     # ── Navigation ────────────────────────────────────────────────────────────
 
@@ -23,6 +23,7 @@ class InventoryPage(BasePage):
 
     def logout(self) -> None:
         self.burger_menu.click()
+        self.page.wait_for_selector("#logout_sidebar_link", state="visible")
         self.logout_link.click()
 
     # ── Products ──────────────────────────────────────────────────────────────
@@ -37,7 +38,6 @@ class InventoryPage(BasePage):
         return self.inventory_items.count()
 
     def add_item_to_cart_by_index(self, index: int) -> str:
-        """Adds item at given index to cart. Returns item name."""
         item = self.inventory_items.nth(index)
         item.get_by_role("button", name="Add to cart").click()
         return item.locator(".inventory_item_name").inner_text()
@@ -55,5 +55,7 @@ class InventoryPage(BasePage):
 
     def sort_by(self, option: str) -> None:
         """Options: 'az', 'za', 'lohi', 'hilo'"""
-        self.page.wait_for_selector("[data-test='product_sort_container']")
-        self.page.locator("[data-test='product_sort_container']").select_option(option)
+        dropdown = self.page.locator(".select_container select")
+        dropdown.wait_for(state="visible")
+        dropdown.select_option(option)
+        self.page.wait_for_load_state("networkidle")
